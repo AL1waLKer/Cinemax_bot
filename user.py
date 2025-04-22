@@ -39,7 +39,7 @@ async def process_secret_code(message: types.Message, state: FSMContext):
     await message.delete()
     
     if not await verify_user_access(message.from_user.id, message.text):
-        await message.answer("Invalid secret code. Please try again.")
+        await message.answer("Noto'g'ri maxfiy kod. Iltimos, qaytadan urinib ko'ring.")
         return
 
     # Check channel subscriptions
@@ -60,11 +60,11 @@ async def process_secret_code(message: types.Message, state: FSMContext):
             for channel in not_subscribed
         ])
         keyboard.inline_keyboard.append([
-            InlineKeyboardButton(text="I've Subscribed", callback_data="check_subscription")
+            InlineKeyboardButton(text="Men obuna bo'ldim", callback_data="check_subscription")
         ])
         
         await message.answer(
-            "Please subscribe to the following channels to access the content:",
+            "Kontentga kirish uchun quyidagi kanallarga obuna bo'ling:",
             reply_markup=keyboard
         )
         return
@@ -74,7 +74,7 @@ async def process_secret_code(message: types.Message, state: FSMContext):
 async def show_content(message: types.Message):
     videos = await get_user_videos()
     if not videos:
-        await message.answer("No videos available at the moment.")
+        await message.answer("Hozircha videolar mavjud emas.")
         return
 
     for video in videos:
@@ -99,11 +99,11 @@ async def check_subscriptions(callback: types.CallbackQuery):
             for channel in not_subscribed
         ])
         keyboard.inline_keyboard.append([
-            InlineKeyboardButton(text="I've Subscribed", callback_data="check_subscription")
+            InlineKeyboardButton(text="Men obuna bo'ldim", callback_data="check_subscription")
         ])
         
         await callback.message.edit_text(
-            "You still need to subscribe to these channels:",
+            "Siz hali quyidagi kanallarga obuna bo'lmagansiz:",
             reply_markup=keyboard
         )
         return

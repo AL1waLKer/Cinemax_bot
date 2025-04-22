@@ -35,51 +35,51 @@ async def is_superadmin(user_id: int) -> bool:
 @dp.message(Command("panel"))
 async def admin_panel(message: types.Message):
     if not await is_admin(message.from_user.id):
-        await message.answer("You don't have access to the admin panel.")
+        await message.answer("Sizda admin paneliga kirish huquqi yo'q.")
         return
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Upload Video", callback_data="upload_video")],
-        [InlineKeyboardButton(text="Delete Video", callback_data="delete_video")],
-        [InlineKeyboardButton(text="Set Required Channels", callback_data="set_channels")],
-        [InlineKeyboardButton(text="Send Post to Users", callback_data="send_post")]
+        [InlineKeyboardButton(text="Video yuklash", callback_data="upload_video")],
+        [InlineKeyboardButton(text="Videoni o'chirish", callback_data="delete_video")],
+        [InlineKeyboardButton(text="Majburiy kanallarni o'rnatish", callback_data="set_channels")],
+        [InlineKeyboardButton(text="Foydalanuvchilarga xabar yuborish", callback_data="send_post")]
     ])
 
     if await is_superadmin(message.from_user.id):
         keyboard.inline_keyboard.append([
-            InlineKeyboardButton(text="Manage Admins", callback_data="manage_admins")
+            InlineKeyboardButton(text="Adminlarni boshqarish", callback_data="manage_admins")
         ])
 
-    await message.answer("Admin Panel:", reply_markup=keyboard)
+    await message.answer("Admin panel:", reply_markup=keyboard)
 
 # Superadmin panel
 @dp.message(Command("spanel"))
 async def superadmin_panel(message: types.Message):
     if not await is_superadmin(message.from_user.id):
-        await message.answer("You don't have access to the superadmin panel.")
+        await message.answer("Sizda superadmin paneliga kirish huquqi yo'q.")
         return
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Add Admin", callback_data="add_admin")],
-        [InlineKeyboardButton(text="Remove Admin", callback_data="remove_admin")],
-        [InlineKeyboardButton(text="Upload Video", callback_data="upload_video")],
-        [InlineKeyboardButton(text="Set Required Channels", callback_data="set_channels")],
-        [InlineKeyboardButton(text="Edit Bot Info", callback_data="edit_bot_info")],
-        [InlineKeyboardButton(text="Delete Video", callback_data="delete_video")],
-        [InlineKeyboardButton(text="View Admin Logs", callback_data="view_logs")]
+        [InlineKeyboardButton(text="Admin qo'shish", callback_data="add_admin")],
+        [InlineKeyboardButton(text="Adminni o'chirish", callback_data="remove_admin")],
+        [InlineKeyboardButton(text="Video yuklash", callback_data="upload_video")],
+        [InlineKeyboardButton(text="Majburiy kanallarni o'rnatish", callback_data="set_channels")],
+        [InlineKeyboardButton(text="Bot ma'lumotlarini tahrirlash", callback_data="edit_bot_info")],
+        [InlineKeyboardButton(text="Videoni o'chirish", callback_data="delete_video")],
+        [InlineKeyboardButton(text="Admin harakatlari jurnalini ko'rish", callback_data="view_logs")]
     ])
 
-    await message.answer("Superadmin Panel:", reply_markup=keyboard)
+    await message.answer("Superadmin panel:", reply_markup=keyboard)
 
 # Callback handlers for admin actions
 @dp.callback_query(F.data == "upload_video")
 async def process_upload_video(callback: types.CallbackQuery, state: FSMContext):
     if not await is_admin(callback.from_user.id):
-        await callback.answer("You don't have permission to upload videos.")
+        await callback.answer("Sizda video yuklash huquqi yo'q.")
         return
 
     await callback.message.edit_text(
-        "Please send the video file:",
+        "Iltimos, video faylini yuboring:",
         reply_markup=None
     )
     await state.set_state(AdminStates.waiting_for_video)
@@ -87,11 +87,11 @@ async def process_upload_video(callback: types.CallbackQuery, state: FSMContext)
 @dp.callback_query(F.data == "set_channels")
 async def process_set_channels(callback: types.CallbackQuery, state: FSMContext):
     if not await is_admin(callback.from_user.id):
-        await callback.answer("You don't have permission to set channels.")
+        await callback.answer("Sizda kanallarni o'rnatish huquqi yo'q.")
         return
 
     await callback.message.edit_text(
-        "Please send the channel ID:",
+        "Iltimos, kanal ID raqamini yuboring:",
         reply_markup=None
     )
     await state.set_state(AdminStates.waiting_for_channel_id)
@@ -100,7 +100,7 @@ async def process_set_channels(callback: types.CallbackQuery, state: FSMContext)
 @dp.message(AdminStates.waiting_for_video)
 async def process_video_upload(message: types.Message, state: FSMContext):
     if not message.video:
-        await message.answer("Please send a video file.")
+        await message.answer("Iltimos, video faylini yuboring.")
         return
 
     session = Session()
@@ -108,14 +108,14 @@ async def process_video_upload(message: types.Message, state: FSMContext):
         user = session.query(User).filter(User.telegram_id == message.from_user.id).first()
         video = Video(
             file_id=message.video.file_id,
-            title=message.video.file_name or "Untitled",
+            title=message.video.file_name or "Nomsiz",
             uploaded_by=user.id
         )
         session.add(video)
         session.commit()
         
-        await log_action(user.id, f"Uploaded video: {video.title}")
-        await message.answer("Video uploaded successfully!")
+        await log_action(user.id, f"Video yuklandi: {video.title}")
+        await message.answer("Video muvaffaqiyatli yuklandi!")
         
         # Send video with restricted permissions
         await message.answer_video(
@@ -138,12 +138,12 @@ async def process_channel_set(message: types.Message, state: FSMContext):
             session.commit()
             
             user = session.query(User).filter(User.telegram_id == message.from_user.id).first()
-            await log_action(user.id, f"Added channel: {channel_id}")
+            await log_action(user.id, f"Kanal qo'shildi: {channel_id}")
             
-            await message.answer("Channel added successfully!")
+            await message.answer("Kanal muvaffaqiyatli qo'shildi!")
         finally:
             session.close()
     except Exception as e:
-        await message.answer(f"Error adding channel: {str(e)}")
+        await message.answer(f"Kanal qo'shishda xatolik: {str(e)}")
     
     await state.clear() 

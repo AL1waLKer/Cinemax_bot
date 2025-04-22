@@ -82,7 +82,7 @@ async def check_subscription(user_id: int, channel_id: str) -> bool:
         member = await bot.get_chat_member(chat_id=channel_id, user_id=user_id)
         return member.status not in ['left', 'kicked']
     except Exception as e:
-        logging.error(f"Error checking subscription: {e}")
+        logging.error(f"Obuna tekshirishda xatolik: {e}")
         return False
 
 async def log_action(user_id: int, action: str):
@@ -101,23 +101,23 @@ async def cmd_start(message: Message, state: FSMContext):
     await state.set_state(UserStates.waiting_for_secret_code)
     
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Enter Secret Code", callback_data="enter_code")]
+        [InlineKeyboardButton(text="Maxfiy kodni kiriting", callback_data="enter_code")]
     ])
     
     await message.answer(
-        "Welcome! Please enter your secret code to access the content.",
+        "Cinemax botiga xush kelibsiz! Kontentga kirish uchun maxfiy kodni kiriting.",
         reply_markup=keyboard
     )
 
 @dp.message(Command("id"))
 async def cmd_id(message: Message):
-    await message.answer(f"Your ID: {message.from_user.id}")
+    await message.answer(f"Sizning ID raqamingiz: {message.from_user.id}")
 
 # Callback handlers
 @dp.callback_query(F.data == "enter_code")
 async def process_code_entry(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
-        "Please send your secret code:",
+        "Iltimos, maxfiy kodni yuboring:",
         reply_markup=None
     )
     await state.set_state(UserStates.waiting_for_secret_code)
